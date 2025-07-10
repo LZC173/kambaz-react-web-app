@@ -20,6 +20,7 @@ import BootstrapLists from "./BootstrapLists";
 import BootstrapForms from "./BootstrapForms";
 import BootstrapNavigation from "./BootstrapNavigation"; 
 import { Routes, Route } from "react-router-dom";  
+import { Link } from "react-router-dom";
 export default function Lab2() {
   return (
     
@@ -28,6 +29,9 @@ export default function Lab2() {
         <Route path="/" element={
           <>
             <div><ScreenSizeLabel /></div>
+            <Link to="/Labs/Lab2/Navigation" className="btn btn-primary mb-3">
+              View Bootstrap Navigation
+            </Link>
             <h2>Lab 2 - Cascading Style Sheets</h2>
             <h3>Styling with the STYLE attribute</h3>
             <p>
@@ -92,6 +96,9 @@ export default function Lab2() {
             <div><BootstrapTables /></div>
             <div><BootstrapLists /></div>
             <div><BootstrapForms /></div>
+            <Link to="/Labs/Lab2/Navigation" className="btn btn-primary mb-3">
+              View Bootstrap Navigation
+            </Link>
           </>
         } />
         <Route path="Navigation" element={<BootstrapNavigation />} />
