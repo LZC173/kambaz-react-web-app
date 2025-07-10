@@ -1,117 +1,121 @@
+import { Form, Row, Col, Card, Badge, CloseButton, Button} from "react-bootstrap";
+import { useParams } from "react-router-dom";
 export default function AssignmentEditor() {
+  const { aid } = useParams();
   return (
-    <div id="wd-assignments-editor">
-      <h2>Assignment Name</h2>
-      <label htmlFor="wd-name">Assignment Name</label><br />
-      <input id="wd-name" value="A1 - ENV + HTML" /><br /><br />
+    <div className="container mt-3">
+      <h4>Assignment Name</h4>
+      <Form>
 
-      <textarea id="wd-description" rows={6} cols={60}>
-        The assignment is available online Submit a link to the landing page of your Web
-        application running on Netlify. The landing page should include the following:
-        Your full name and section
-        Links to each of the lab assignments
-        Link to the Kanbas application
-        Links to all relevant source code repositories
-        The Kanbas application should include a link to navigate back to the landing page.
-      </textarea>
-      <br /><br />
+        <Form.Group className="mb-3" controlId="assignmentName">
+          <Form.Label>Assignment Name</Form.Label>
+          <Form.Control type="text" value={aid} />
+        </Form.Group>
 
-      <table>
-        <tbody>
-          <tr>
-            <td align="right" valign="top">
-              <label htmlFor="wd-points">Points</label>
-            </td>
-            <td>
-              <input id="wd-points" value={100} />
-            </td>
-          </tr>
 
-          <tr>
-            <td align="right" valign="top">
-              <label htmlFor="wd-group">Assignment Group</label>
-            </td>
-            <td>
-              <select id="wd-group">
-                <option>ASSIGNMENTS</option>
-              </select>
-            </td>
-          </tr>
+        <Form.Group className="mb-3" controlId="assignmentDescription">
+          <Form.Label>Description</Form.Label>
+          <Form.Control
+            as="textarea"
+            rows={12}
+            defaultValue={`
+            The assignment is available online. 
+            Submit a link to the landing page of your Web application running on Netlify.
+            The landing page should include the following:
+            * Your full name and section
+            * Links to each of the lab assignments
+            * Link to the Kanbas application
+            * Links to all relevant source code repositories
 
-          <tr>
-            <td align="right" valign="top">
-              <label htmlFor="wd-display-grade-as">Display Grade as</label>
-            </td>
-            <td>
-              <select id="wd-display-grade-as">
-                <option>Percentage</option>
-              </select>
-            </td>
-          </tr>
+            The Kanbas application should include a link to navigate back to the landing page.`}
+          />
+        </Form.Group>
+        <Form.Group className="mb-3" controlId="assignmentPoints">
+          <Form.Label>Points</Form.Label>
+          <Form.Control type="number" value={100} />
+        </Form.Group>
+      <Form.Group className="mb-3" controlId="assignmentGroup">
+        <Form.Label>Assignment Group</Form.Label>
+        <Form.Select>
+          <option>ASSIGNMENTS</option>
+        </Form.Select>
+      </Form.Group>
+        <Form.Group className="mb-3" controlId="Display Grade as">
+        <Form.Label>Display Grade as</Form.Label>
+        <Form.Select>
+          <option>Percentage</option>
+        </Form.Select>
+      </Form.Group>
+      <Form.Group as={Row} className="mb-3" controlId="submissionType">
+        <Form.Label column sm={3}>
+          Submission Type
+        </Form.Label>
+        <Col sm={9}>
+          <Form.Select className="mb-3">
+            <option>Online</option>
+          </Form.Select>
 
-          <tr>
-            <td align="right" valign="top">
-              <label htmlFor="wd-submission-type">Submission Type</label>
-            </td>
-            <td>
-              <select id="wd-submission-type">
-                <option>Online</option>
-              </select>
+          <strong>Online Entry Options</strong>
+          <div className="ms-2">
+            <Form.Check type="checkbox" id="text-entry" label="Text Entry" />
+            <Form.Check type="checkbox" id="website-url" label="Website URL" defaultChecked />
+            <Form.Check type="checkbox" id="media-recordings" label="Media Recordings" />
+            <Form.Check type="checkbox" id="student-annotation" label="Student Annotation" />
+            <Form.Check type="checkbox" id="file-uploads" label="File Uploads" />
+          </div>
+        </Col>
+      </Form.Group>
 
-              <div>
-                <strong>Online Entry Options</strong><br />
-                <input type="checkbox" id="wd-text-entry" />
-                <label htmlFor="wd-text-entry">Text Entry</label><br />
-                <input type="checkbox" id="wd-website-url" />
-                <label htmlFor="wd-website-url">Website URL</label><br />
-                <input type="checkbox" id="wd-media-recordings" />
-                <label htmlFor="wd-media-recordings">Media Recordings</label><br />
-                <input type="checkbox" id="wd-student-annotation" />
-                <label htmlFor="wd-student-annotation">Student Annotation</label><br />
-                <input type="checkbox" id="wd-file-upload" />
-                <label htmlFor="wd-file-upload">File Uploads</label><br />
-              </div>
-            </td>
-          </tr>
+      <Form.Group as={Row} className="mb-3">
+  <Form.Label column sm={2}>Assign</Form.Label>
+  <Col sm={10}>
+    <Card className="p-3">
 
-          <tr>
-            <td align="right" valign="top">
-              <label htmlFor="wd-assign-to">Assign to</label>
-            </td>
-            <td>
-              <input id="wd-assign-to" value="Everyone" />
-            </td>
-          </tr>
+      <Card className="p-3">
+        <Form.Group className="mb-3" controlId="assignTo">
+          <Form.Label>Assign to</Form.Label>
+          <div className="border rounded p-2 d-flex align-items-center" style={{ minHeight: "38px" }}>
+            <Badge bg="light" text="dark" className="me-2 px-2 py-1 d-flex align-items-center">
+              Everyone
+              <CloseButton className="ms-2" style={{ fontSize: "0.6rem" }} />
+            </Badge>
+          </div>
+        </Form.Group>
+      </Card>
 
-          <tr>
-            <td align="right" valign="top">
-              <label htmlFor="wd-due-date">Due</label>
-            </td>
-            <td>
-              <input id="wd-due-date" type="date" value="2024-05-13" />
-            </td>
-          </tr>
+      <Form.Group className="mb-3" controlId="dueDate">
+        <Form.Label>Due</Form.Label>
+        <Form.Control type="date" defaultValue="2024-05-13" />
+      </Form.Group>
 
-          <tr>
-            <td align="right" valign="top">
-              <label htmlFor="wd-available-from">Available from</label>
-            </td>
-            <td>
-              <input id="wd-available-from" type="date" value="2024-05-06" />
-              <label htmlFor="wd-available-until">Until</label>
-              <input id="wd-available-until" type="date" value="2024-05-20" />
-            </td>
-          </tr>
-
-          <tr>
-            <td></td>
-            <td>
-              <button>Cancel</button>
-              <button>Save</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <Row>
+        <Col>
+          <Form.Group className="mb-3" controlId="availableFrom">
+            <Form.Label>Available from</Form.Label>
+            <Form.Control type="date" defaultValue="2024-05-06" />
+          </Form.Group>
+        </Col>
+        <Col>
+          <Form.Group className="mb-3" controlId="availableUntil">
+            <Form.Label>Until</Form.Label>
+            <Form.Control type="date" defaultValue="2024-05-20" />
+          </Form.Group>
+        </Col>
+      </Row>
+    </Card>
+  </Col>
+</Form.Group>
+      <Form.Group className="mb-3 text-end">
+        <Button variant="light" className="me-2 border">
+          Cancel
+        </Button>
+        <Button variant="danger">
+          Save
+        </Button>
+      </Form.Group>
+        </Form>
     </div>
+
+
   );
 }

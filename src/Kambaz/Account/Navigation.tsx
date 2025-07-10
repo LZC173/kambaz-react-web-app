@@ -1,9 +1,30 @@
 import { Link } from "react-router-dom";
+import "../styles.css";
+// use css that previouse defined 
 export default function AccountNavigation() {
   return (
-    <div id="wd-account-navigation">
-      <Link to={`/Kambaz/Account/Signin`}  > Signin  </Link> <br/>
-      <Link to={`/Kambaz/Account/Signup`}  > Signup  </Link> <br/>
-      <Link to={`/Kambaz/Account/Profile`} > Profile </Link> <br/>
+    <div className="list-group wd">
+      <Link
+        to="/Kambaz/Account/Signin"
+        className="list-group-item active border-0"
+      >
+        Signin
+      </Link>
+
+
+      <Link
+        to="/Kambaz/Account/Signup"
+        className="list-group-item border-0 text-danger"
+      >
+        Signup
+      </Link>
+
+      <Link
+        to="/Kambaz/Account/Profile"
+        className="list-group-item border-0 text-danger"
+      >
+        Profile
+      </Link>
     </div>
-);}
+  );
+}

@@ -1,95 +1,122 @@
 import { Link } from "react-router-dom";
+import { Card, Button, Col, Row } from "react-bootstrap";
 
 export default function Dashboard() {
   return (
-    <div id="wd-dashboard">
-      <h1 id="wd-dashboard-title">Dashboard</h1> <hr />
-      <h2 id="wd-dashboard-published">Published Courses (7)</h2> <hr />
-      <div id="wd-dashboard-courses">
-        {/* course1：React */}
-        <div className="wd-dashboard-course">
-          <Link to="/Kambaz/Courses/1234/Home" className="wd-dashboard-course-link">
-            <img src="/images/reactjs.jpg" width={200} />
-            <div>
-              <h5>CS1234 React JS</h5>
-              <p className="wd-dashboard-course-title">Full Stack Software Developer</p>
-              <button>Go</button>
-            </div>
-          </Link>
-        </div>
+<div id="wd-dashboard">
+ <h1 id="wd-dashboard-title">Dashboard</h1> <hr />
+ <h2 id="wd-dashboard-published">Published Courses (12)</h2> <hr />
+ <div id="wd-dashboard-courses">
+  <Row xs={1} md={5} className="g-4">
+   <Col className="wd-dashboard-course" style={{ width: "300px" }}>
+    <Card>
+     <Link to="/Kambaz/Courses/1234/Home"
+           className="wd-dashboard-course-link text-decoration-none text-dark">
+      <Card.Img variant="top" src="/images/reactjs.jpg" width="100%" height={160}/>
+      <Card.Body>
+       <Card.Title className="wd-dashboard-course-title text-nowrap overflow-hidden">CS1234 React JS</Card.Title>
+       <Card.Text  className="wd-dashboard-course-description overflow-hidden" style={{ height: "100px" }}>
+        Full Stack software developer</Card.Text>
+       <Button variant="primary">Go</Button>
+      </Card.Body>
+     </Link>
+    </Card>
+   </Col>
 
-        {/* course2：Node.js */}
-        <div className="wd-dashboard-course">
-          <Link to="/Kambaz/Courses/2345/Home" className="wd-dashboard-course-link">
-            <img src="/images/nodejs.jpg" width={200} />
-            <div>
-              <h5>CS2345 Node JS</h5>
-              <p className="wd-dashboard-course-title">Backend with Express & MongoDB</p>
-              <button>Go</button>
-            </div>
-          </Link>
-        </div>
+   <Col className="wd-dashboard-course" style={{ width: "300px" }}>
+    <Card>
+     <Link to="/Kambaz/Courses/2345/Home"
+           className="wd-dashboard-course-link text-decoration-none text-dark">
+      <Card.Img variant="top" src="/images/nodejs.jpg" width="100%" height={160}/>
+      <Card.Body>
+       <Card.Title className="wd-dashboard-course-title text-nowrap overflow-hidden">CS2345 Node JS</Card.Title>
+       <Card.Text className="wd-dashboard-course-description overflow-hidden" style={{ height: "100px" }}>
+        Backend with Express & MongoDB</Card.Text>
+       <Button variant="primary">Go</Button>
+      </Card.Body>
+     </Link>
+    </Card>
+   </Col>
 
-        {/* course3：MongoDB */}
-        <div className="wd-dashboard-course">
-          <Link to="/Kambaz/Courses/3456/Home" className="wd-dashboard-course-link">
-            <img src="/images/mongodb.jpg" width={200} />
-            <div>
-              <h5>CS3456 MongoDB</h5>
-              <p className="wd-dashboard-course-title">NoSQL Database Systems</p>
-              <button>Go</button>
-            </div>
-          </Link>
-        </div>
+          <Col className="wd-dashboard-course" style={{ width: "300px" }}>
+            <Card>
+              <Link to="/Kambaz/Courses/3456/Home" className="wd-dashboard-course-link text-decoration-none text-dark">
+                <Card.Img variant="top" src="/images/mongodb.jpg" width="100%" height={160} />
+                <Card.Body>
+                  <Card.Title className="wd-dashboard-course-title text-nowrap overflow-hidden">CS3456 MongoDB</Card.Title>
+                  <Card.Text className="wd-dashboard-course-description overflow-hidden" style={{ height: "100px" }}>
+                    NoSQL Database Systems
+                  </Card.Text>
+                  <Button variant="primary">Go</Button>
+                </Card.Body>
+              </Link>
+            </Card>
+          </Col>
 
-        {/* course4：Java */}
-        <div className="wd-dashboard-course">
-          <Link to="/Kambaz/Courses/4567/Home" className="wd-dashboard-course-link">
-            <img src="/images/java.jpg" width={200} />
-            <div>
-              <h5>CS4567 Java</h5>
-              <p className="wd-dashboard-course-title">Object-Oriented Programming</p>
-              <button>Go</button>
-            </div>
-          </Link>
-        </div>
+          <Col className="wd-dashboard-course" style={{ width: "300px" }}>
+            <Card>
+              <Link to="/Kambaz/Courses/4567/Home" className="wd-dashboard-course-link text-decoration-none text-dark">
+                <Card.Img variant="top" src="/images/java.jpg" width="100%" height={160} />
+                <Card.Body>
+                  <Card.Title className="wd-dashboard-course-title text-nowrap overflow-hidden">CS4567 Java</Card.Title>
+                  <Card.Text className="wd-dashboard-course-description overflow-hidden" style={{ height: "100px" }}>
+                    Object-Oriented Programming
+                  </Card.Text>
+                  <Button variant="primary">Go</Button>
+                </Card.Body>
+              </Link>
+            </Card>
+          </Col>
 
-        {/* course5：Python */}
-        <div className="wd-dashboard-course">
-          <Link to="/Kambaz/Courses/5678/Home" className="wd-dashboard-course-link">
-            <img src="/images/python.jpg" width={200} />
-            <div>
-              <h5>CS5678 Python</h5>
-              <p className="wd-dashboard-course-title">Data Science with Python</p>
-              <button>Go</button>
-            </div>
-          </Link>
-        </div>
+ 
+          <Col className="wd-dashboard-course" style={{ width: "300px" }}>
+            <Card>
+              <Link to="/Kambaz/Courses/5678/Home" className="wd-dashboard-course-link text-decoration-none text-dark">
+                <Card.Img variant="top" src="/images/python.jpg" width="100%" height={160} />
+                <Card.Body>
+                  <Card.Title className="wd-dashboard-course-title text-nowrap overflow-hidden">CS5678 Python</Card.Title>
+                  <Card.Text className="wd-dashboard-course-description overflow-hidden" style={{ height: "100px" }}>
+                    Data Science with Python
+                  </Card.Text>
+                  <Button variant="primary">Go</Button>
+                </Card.Body>
+              </Link>
+            </Card>
+          </Col>
 
-        {/* course6：C++ */}
-        <div className="wd-dashboard-course">
-          <Link to="/Kambaz/Courses/6789/Home" className="wd-dashboard-course-link">
-            <img src="/images/cpp.jpg" width={200} />
-            <div>
-              <h5>CS6789 C++</h5>
-              <p className="wd-dashboard-course-title">Low-Level Programming</p>
-              <button>Go</button>
-            </div>
-          </Link>
-        </div>
 
-        {/* course 7：HTML/CSS */}
-        <div className="wd-dashboard-course">
-          <Link to="/Kambaz/Courses/7890/Home" className="wd-dashboard-course-link">
-            <img src="/images/htmlcss.jpg" width={200} />
-            <div>
-              <h5>CS7890 HTML/CSS</h5>
-              <p className="wd-dashboard-course-title">Frontend Web Design Basics</p>
-              <button>Go</button>
-            </div>
-          </Link>
-        </div>
-      </div>
-    </div>
+          <Col className="wd-dashboard-course" style={{ width: "300px" }}>
+            <Card>
+              <Link to="/Kambaz/Courses/6789/Home" className="wd-dashboard-course-link text-decoration-none text-dark">
+                <Card.Img variant="top" src="/images/cpp.jpg" width="100%" height={160} />
+                <Card.Body>
+                  <Card.Title className="wd-dashboard-course-title text-nowrap overflow-hidden">CS6789 C++</Card.Title>
+                  <Card.Text className="wd-dashboard-course-description overflow-hidden" style={{ height: "100px" }}>
+                    Low-Level Programming
+                  </Card.Text>
+                  <Button variant="primary">Go</Button>
+                </Card.Body>
+              </Link>
+            </Card>
+          </Col>
+
+          <Col className="wd-dashboard-course" style={{ width: "300px" }}>
+            <Card>
+              <Link to="/Kambaz/Courses/7890/Home" className="wd-dashboard-course-link text-decoration-none text-dark">
+                <Card.Img variant="top" src="/images/htmlcss.jpg" width="100%" height={160} />
+                <Card.Body>
+                  <Card.Title className="wd-dashboard-course-title text-nowrap overflow-hidden">CS7890 HTML/CSS</Card.Title>
+                  <Card.Text className="wd-dashboard-course-description overflow-hidden" style={{ height: "100px" }}>
+                    Frontend Web Design Basics
+                  </Card.Text>
+                  <Button variant="primary">Go</Button>
+                </Card.Body>
+              </Link>
+            </Card>
+          </Col>
+
+  </Row>
+</div>
+</div>
   );
 }

@@ -1,0 +1,25 @@
+import { Button, Form, InputGroup } from "react-bootstrap";
+import { FaPlus, FaSearch } from "react-icons/fa";
+
+export default function AssignmentControl() {
+  return (
+    <div className="d-flex justify-content-between align-items-center mb-3">
+      <InputGroup className="w-50 mt-5 ms-1">
+        <InputGroup.Text>
+          <FaSearch />
+        </InputGroup.Text>
+        <Form.Control placeholder="Search..." />
+      </InputGroup>
+      <div className="mt-5 me-1 d-flex gap-2">
+        <Button variant="light" className="border">
+          <FaPlus className="me-1" />
+          Group
+        </Button>
+        <Button variant="danger">
+          <FaPlus className="me-1" />
+          Assignment
+        </Button>
+      </div>
+    </div>
+  );
+}
