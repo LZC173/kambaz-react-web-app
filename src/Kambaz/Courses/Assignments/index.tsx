@@ -6,10 +6,15 @@ import { ListGroup } from "react-bootstrap";
 import { BsGripVertical } from "react-icons/bs";
 import { FaCaretDown } from "react-icons/fa";
 import { MdEditDocument } from "react-icons/md";
-import { Link } from "react-router-dom"; 
+import { Link ,useParams} from "react-router-dom"; 
+import * as db from "../../Database";
 import "../../styles.css";
 
+// i Made change to json data because current json data lack aviliable time and bunch of things.
+//so I add them to json data 
 export default function Assignments() {
+ const { cid }        = useParams<{ cid: string }>(); 
+ const assignments    = db.assignments;
   return (
     <div>
       <AssignmentControl /><br /><br /><br /><br />
@@ -20,23 +25,25 @@ export default function Assignments() {
             ASSIGNMENTS <AssignmentControlButtons />
           </div>
           <ListGroup className="wd-lessons rounded-0">
-
-            <ListGroup.Item className="wd-lesson p-3 ps-1">
+            {assignments .filter(a => a.course === cid).map(a => (
+            <ListGroup.Item   key={a._id} className="wd-lesson p-3 ps-1">
               <div className="d-flex align-items-start">
                 <BsGripVertical className="me-2 fs-3 mt-4" />
                 <MdEditDocument className="me-2 fs-4 mt-4" />
                 <div className="ms-2">
                   <div className="fw-bold">
-                    <Link to="A1">A1</Link>
+                  <Link to={`/Kambaz/Courses/${cid}/Assignments/${a._id}`}>
+                           {a._id}
+                  </Link>
                   </div>
                   <div>
-                    <span className="text-danger">Multiple Modules</span>
+                    <span className="text-danger">{a.modulesText}</span>
                     <span className="mx-2">|</span>
-                    <span className="text-secondary">Not available until May 6 at 12:00am</span>
+                    <span className="text-secondary">{a.availableText}</span>
                     <span className="mx-2">|</span>
                   </div>
                   <div className="text-secondary">
-                    Due May 13 at 11:59pm <span className="mx-2">|</span> 100 pts
+                    {a.dueDateText} <span className="mx-2">|</span> {a.points} pts
                   </div>
                 </div>
                 <div className="ms-auto">
@@ -44,55 +51,7 @@ export default function Assignments() {
                 </div>
               </div>
             </ListGroup.Item>
-
-            <ListGroup.Item className="wd-lesson p-3 ps-1">
-              <div className="d-flex align-items-start">
-                <BsGripVertical className="me-2 fs-3 mt-4" />
-                <MdEditDocument className="me-2 fs-4 mt-4" />
-                <div className="ms-2">
-                  <div className="fw-bold">
-                    <Link to="A2">A2</Link>
-                  </div>
-                  <div>
-                    <span className="text-danger">Multiple Modules</span>
-                    <span className="mx-2">|</span>
-                    <span className="text-secondary">Not available until May 13 at 12:00am</span>
-                    <span className="mx-2">|</span>
-                  </div>
-                  <div className="text-secondary">
-                    Due May 20 at 11:59pm <span className="mx-2">|</span> 100 pts
-                  </div>
-                </div>
-                <div className="ms-auto">
-                  <AssignmentLessonControlButtons />
-                </div>
-              </div>
-            </ListGroup.Item>
-
-            <ListGroup.Item className="wd-lesson p-3 ps-1">
-              <div className="d-flex align-items-start">
-                <BsGripVertical className="me-2 fs-3 mt-4" />
-                <MdEditDocument className="me-2 fs-4 mt-4" />
-                <div className="ms-2">
-                  <div className="fw-bold">
-                    <Link to="A3">A3</Link>
-                  </div>
-                  <div>
-                    <span className="text-danger">Multiple Modules</span>
-                    <span className="mx-2">|</span>
-                    <span className="text-secondary">Not available until May 20 at 12:00am</span>
-                    <span className="mx-2">|</span>
-                  </div>
-                  <div className="text-secondary">
-                    Due May 27 at 11:59pm <span className="mx-2">|</span> 100 pts
-                  </div>
-                </div>
-                <div className="ms-auto">
-                  <AssignmentLessonControlButtons />
-                </div>
-              </div>
-            </ListGroup.Item>
-
+          ))}
           </ListGroup>
         </ListGroup.Item>
       </ListGroup>

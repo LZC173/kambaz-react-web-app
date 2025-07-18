@@ -1,12 +1,13 @@
 import { Form, Row, Col, Card, Badge, CloseButton, Button} from "react-bootstrap";
-import { useParams } from "react-router-dom";
+import {useParams,Link} from "react-router-dom"; 
+import * as db from "../../Database";
 export default function AssignmentEditor() {
-  const { aid } = useParams();
+   const { cid, aid } = useParams<{ cid: string; aid: string }>();
+   const assignment = db.assignments.find(a => a._id === aid)!;
   return (
     <div className="container mt-3">
-      <h4>Assignment Name</h4>
+      <h4>{assignment.title}</h4>
       <Form>
-
         <Form.Group className="mb-3" controlId="assignmentName">
           <Form.Label>Assignment Name</Form.Label>
           <Form.Control type="text" value={aid} />
@@ -32,7 +33,7 @@ export default function AssignmentEditor() {
         </Form.Group>
         <Form.Group className="mb-3" controlId="assignmentPoints">
           <Form.Label>Points</Form.Label>
-          <Form.Control type="number" value={100} />
+          <Form.Control type="number" value={assignment.points} />
         </Form.Group>
       <Form.Group className="mb-3" controlId="assignmentGroup">
         <Form.Label>Assignment Group</Form.Label>
@@ -85,20 +86,20 @@ export default function AssignmentEditor() {
 
       <Form.Group className="mb-3" controlId="dueDate">
         <Form.Label>Due</Form.Label>
-        <Form.Control type="date" defaultValue="2024-05-13" />
+        <Form.Control type="date" defaultValue={assignment.dueDate} />
       </Form.Group>
 
       <Row>
         <Col>
           <Form.Group className="mb-3" controlId="availableFrom">
             <Form.Label>Available from</Form.Label>
-            <Form.Control type="date" defaultValue="2024-05-06" />
+            <Form.Control type="date" defaultValue={assignment.availableFrom}/>
           </Form.Group>
         </Col>
         <Col>
           <Form.Group className="mb-3" controlId="availableUntil">
             <Form.Label>Until</Form.Label>
-            <Form.Control type="date" defaultValue="2024-05-20" />
+            <Form.Control type="date" defaultValue={assignment.availableUntil} />
           </Form.Group>
         </Col>
       </Row>
@@ -106,14 +107,19 @@ export default function AssignmentEditor() {
   </Col>
 </Form.Group>
       <Form.Group className="mb-3 text-end">
+        <Link to={`/Kambaz/Courses/${cid}/Assignments`}>
         <Button variant="light" className="me-2 border">
           Cancel
         </Button>
+        </Link>
+          <Link to={`/Kambaz/Courses/${cid}/Assignments`}>
         <Button variant="danger">
           Save
         </Button>
+        </Link>
       </Form.Group>
         </Form>
+        
     </div>
 
 
