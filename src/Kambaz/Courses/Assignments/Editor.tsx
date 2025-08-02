@@ -1,5 +1,5 @@
-
-import  { useState } from "react";
+// src/Kambaz/Courses/Assignments/AssignmentEditor.tsx
+import { useEffect, useRef, useState } from "react";
 import {
   Form,
   Row,
@@ -11,57 +11,155 @@ import {
 } from "react-bootstrap";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import * as db from "../../Database";
-import { updateAssignment } from "./reducer";
+
+import {
+  updateAssignment as updateAssignmentAction,
+  addAssignment,
+  deleteAssignment as deleteAssignmentAction,
+  setAssignmentField,
+} from "./reducer";
+import * as assignmentsClient from "./client";
+import type { Assignment } from "./reducer";
 
 export default function AssignmentEditor() {
   const { cid, aid } = useParams<{ cid: string; aid: string }>();
   const navigate = useNavigate();
   const dispatch = useDispatch();
- 
-  const assignments = useSelector((s: any) => s.assignmentsReducer.assignments);
-  const existing =
-    assignments.find((a: any) => a._id === aid) ||
-    db.assignments.find((a) => a._id === aid)!;
 
- 
-  const [id, setId] = useState(existing._id);
-  const [modulesText, setModulesText] = useState(existing.modulesText);
-  const [availableFrom, setAvailableFrom] = useState(existing.availableFrom);
-  const [availableUntil, setAvailableUntil] = useState(
-    existing.availableUntil
-  );
-  const [dueDate, setDueDate] = useState(existing.dueDate);
-  const [points, setPoints] = useState(existing.points);
+  const assignments = useSelector(
+    (s: any) => s.assignmentsReducer.assignments
+  ) as Assignment[];
+  const isNew = aid === "new";
 
-  // ///handle save ,will disptach and update assignment!!!!!!!!!!!!!
-  const handleSave = () => {
-    dispatch(
-      updateAssignment({
-        originalId: existing._id, 
-        _id: id,
-        title: id,
-        course: cid!,
-        modulesText,
-        availableFrom,
-        availableUntil,
-        dueDate,
-        points,
-      })
-    );
-    navigate(`/Kambaz/Courses/${cid}/Assignments`);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const currentIdRef = useRef<string>(isNew ? "" : aid || "");
+  const assignment = assignments.find((a) => a._id === currentIdRef.current);
+
+  useEffect(() => {
+    if (!cid) return;
+
+    if (isNew) {
+      // only create draft once
+      if (currentIdRef.current) {
+        return;
+      }
+      const draftId = crypto.randomUUID();
+      currentIdRef.current = draftId;
+      dispatch(
+        addAssignment({
+          _id: draftId,
+          title: "",
+          course: cid,
+          modulesText: "",
+          availableFrom: "",
+          availableUntil: "",
+          dueDate: "",
+          points: 0,
+        })
+      );
+      return;
+    }
+
+    if (!aid) return;
+
+    if (assignment) {
+      currentIdRef.current = assignment._id;
+      if (!assignment.title) {
+        dispatch(
+          updateAssignmentAction({
+            _id: assignment._id,
+            title: assignment._id,
+          })
+        );
+      }
+      return;
+    }
+
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const fetched = await assignmentsClient.getAssignment(aid!);
+        dispatch(addAssignment(fetched));
+        currentIdRef.current = fetched._id;
+      } catch (e: any) {
+        setError(e?.message || "Failed to load assignment");
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [aid, isNew, cid, assignment, dispatch]);
+
+  if (loading) {
+    return <div>Loading assignment...</div>;
+  }
+
+  if (!assignment) {
+    return <div className="text-danger">Assignment not found.</div>;
+  }
+
+  const changeField = (
+    field: keyof Omit<Assignment, "_id" | "availableText" | "dueDateText">,
+    value: any
+  ) => {
+    dispatch(setAssignmentField({ _id: assignment._id, field, value }));
+  };
+
+  const handleSave = async () => {
+    if (!cid) return;
+
+    try {
+      if (isNew) {
+        // create new on backend, remove draft, add real
+        const created = await assignmentsClient.createAssignmentForCourse(
+          cid,
+          {
+            title: assignment.title || assignment._id,
+            course: cid,
+            modulesText: assignment.modulesText,
+            availableFrom: assignment.availableFrom,
+            availableUntil: assignment.availableUntil,
+            dueDate: assignment.dueDate,
+            points: assignment.points,
+          }
+        );
+        dispatch(deleteAssignmentAction(assignment._id)); // remove draft
+        dispatch(addAssignment(created));
+      } else {
+        const updated = await assignmentsClient.updateAssignment({
+          _id: assignment._id,
+          title: assignment.title || assignment._id,
+          course: cid,
+          modulesText: assignment.modulesText,
+          availableFrom: assignment.availableFrom,
+          availableUntil: assignment.availableUntil,
+          dueDate: assignment.dueDate,
+          points: assignment.points,
+        });
+        dispatch(updateAssignmentAction(updated));
+      }
+      navigate(`/Kambaz/Courses/${cid}/Assignments`);
+    } catch (e: any) {
+      console.error("save failed", e);
+      setError("Failed to save assignment");
+    }
   };
 
   return (
     <div className="container mt-3">
-      <h4>{existing.title}</h4>
+      <h4>{isNew ? "New Assignment" : assignment.title || assignment._id}</h4>
+      {error && <div className="text-danger mb-2">{error}</div>}
       <Form>
         <Form.Group className="mb-3" controlId="assignmentName">
           <Form.Label>Assignment Name</Form.Label>
           <Form.Control
             type="text"
-            value={id}
-            onChange={(e) => setId(e.target.value)}
+            value={assignment.title}
+            onChange={(e) => changeField("title", e.target.value)}
+            placeholder="Assignment Title"
           />
         </Form.Group>
 
@@ -70,8 +168,8 @@ export default function AssignmentEditor() {
           <Form.Control
             as="textarea"
             rows={6}
-            value={modulesText}
-            onChange={(e) => setModulesText(e.target.value)}
+            value={assignment.modulesText}
+            onChange={(e) => changeField("modulesText", e.target.value)}
           />
         </Form.Group>
 
@@ -79,8 +177,10 @@ export default function AssignmentEditor() {
           <Form.Label>Points</Form.Label>
           <Form.Control
             type="number"
-            value={points}
-            onChange={(e) => setPoints(Number(e.target.value))}
+            value={assignment.points}
+            onChange={(e) =>
+              changeField("points", Number(e.target.value) || 0)
+            }
           />
         </Form.Group>
 
@@ -125,7 +225,11 @@ export default function AssignmentEditor() {
                 id="student-annotation"
                 label="Student Annotation"
               />
-              <Form.Check type="checkbox" id="file-uploads" label="File Uploads" />
+              <Form.Check
+                type="checkbox"
+                id="file-uploads"
+                label="File Uploads"
+              />
             </div>
           </Col>
         </Form.Group>
@@ -161,8 +265,8 @@ export default function AssignmentEditor() {
               <Form.Label>Due</Form.Label>
               <Form.Control
                 type="date"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
+                value={assignment.dueDate}
+                onChange={(e) => changeField("dueDate", e.target.value)}
               />
             </Form.Group>
 
@@ -172,8 +276,10 @@ export default function AssignmentEditor() {
                   <Form.Label>Available from</Form.Label>
                   <Form.Control
                     type="date"
-                    value={availableFrom}
-                    onChange={(e) => setAvailableFrom(e.target.value)}
+                    value={assignment.availableFrom}
+                    onChange={(e) =>
+                      changeField("availableFrom", e.target.value)
+                    }
                   />
                 </Form.Group>
               </Col>
@@ -182,8 +288,10 @@ export default function AssignmentEditor() {
                   <Form.Label>Until</Form.Label>
                   <Form.Control
                     type="date"
-                    value={availableUntil}
-                    onChange={(e) => setAvailableUntil(e.target.value)}
+                    value={assignment.availableUntil}
+                    onChange={(e) =>
+                      changeField("availableUntil", e.target.value)
+                    }
                   />
                 </Form.Group>
               </Col>

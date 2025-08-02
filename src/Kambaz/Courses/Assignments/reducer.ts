@@ -1,7 +1,4 @@
-
-import { createSlice } from "@reduxjs/toolkit";
-import type { PayloadAction } from "@reduxjs/toolkit";
-import { assignments as dbAssignments } from "../../Database";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { v4 as uuidv4 } from "uuid";
 
 export interface Assignment {
@@ -9,12 +6,13 @@ export interface Assignment {
   title: string;
   course: string;
   modulesText: string;
-  availableText: string;
+  availableText?: string;
   availableFrom: string;
   availableUntil: string;
-  dueDateText: string;
+  dueDateText?: string;
   dueDate: string;
   points: number;
+  editing?: boolean;
 }
 
 interface AssignmentsState {
@@ -22,11 +20,8 @@ interface AssignmentsState {
 }
 
 const initialState: AssignmentsState = {
-  assignments: dbAssignments,
+  assignments: [],
 };
-
-/// make iso to text !!!!!!!!!!!!!!!!!!!!!! important !!!!!!!!!!!!!!
-// without this ,format would be extremely ugly!!!!!!!!!!!!!!!!!!!
 
 function formatText(iso: string, prefix: string) {
   const d = new Date(iso);
@@ -41,88 +36,117 @@ function formatText(iso: string, prefix: string) {
   return `${prefix} ${datePart} at ${h}:${m}${ampm}`;
 }
 
+const enrich = (a: Partial<Assignment>): Assignment => {
+  const availableFrom = a.availableFrom || "";
+  const dueDate = a.dueDate || "";
+  return {
+    _id: a._id ?? uuidv4(),
+    title: a.title ?? "",
+    course: a.course ?? "",
+    modulesText: a.modulesText ?? "",
+    availableFrom,
+    availableUntil: a.availableUntil ?? "",
+    availableText:
+      a.availableText ??
+      (availableFrom ? formatText(availableFrom, "Not available until") : ""),
+    dueDate,
+    dueDateText:
+      a.dueDateText ?? (dueDate ? formatText(dueDate, "Due") : ""),
+    points: a.points ?? 0,
+    editing: a.editing ?? false,
+  };
+};
+
 const assignmentsSlice = createSlice({
   name: "assignments",
   initialState,
   reducers: {
-    
-    // add new 
-    addAssignment: (
-      state,
-      action: PayloadAction<{
-        _id?: string;
-        title: string;
-        course: string;
-        modulesText: string;
-        availableFrom: string;
-        availableUntil: string;
-        dueDate: string;
-        points: number;
-      }>
-    ) => {
-      const p = action.payload;
-      const id = p._id ?? uuidv4();
-      state.assignments.push({
-        _id: id,
-        title: p.title,
-        course: p.course,
-        modulesText: p.modulesText,
-        availableFrom: p.availableFrom,
-        availableUntil: p.availableUntil,
-        availableText: formatText(p.availableFrom, "Not available until"),
-        dueDate: p.dueDate,
-        dueDateText: formatText(p.dueDate, "Due"),
-        points: p.points,
-      });
+    setAssignments: (state, { payload }: PayloadAction<Partial<Assignment>[]>) => {
+      state.assignments = payload.map((a) => enrich(a));
     },
-
-    // delete!!!!!!!!!
-    deleteAssignment: (state, action: PayloadAction<string>) => {
-      state.assignments = state.assignments.filter(
-        (a) => a._id !== action.payload
-      );
+    addAssignment: (state, { payload }: PayloadAction<Partial<Assignment>>) => {
+      const newAssignment = enrich(payload);
+      state.assignments.push(newAssignment);
     },
-
-    // update!!!!!!!!
+    deleteAssignment: (state, { payload }: PayloadAction<string>) => {
+      state.assignments = state.assignments.filter((a) => a._id !== payload);
+    },
     updateAssignment: (
       state,
-      action: PayloadAction<{
-        originalId: string;
+      { payload }: PayloadAction<Partial<Assignment> & { _id: string }>
+    ) => {
+      state.assignments = state.assignments.map((a) => {
+        if (a._id !== payload._id) return a;
+        const merged: any = { ...a, ...payload };
+
+        if (payload.availableFrom) {
+          delete merged.availableText;
+        }
+        if (payload.dueDate) {
+          delete merged.dueDateText;
+        }
+
+        return enrich(merged);
+      });
+    },
+    setAssignmentField: (
+      state,
+      {
+        payload,
+      }: PayloadAction<{
         _id: string;
-        title: string;
-        course: string;
-        modulesText: string;
-        availableFrom: string;
-        availableUntil: string;
-        dueDate: string;
-        points: number;
+        field: keyof Omit<Assignment, "_id">;
+        value: any;
       }>
     ) => {
-      const p = action.payload;
+      state.assignments = state.assignments.map((a) => {
+        if (a._id !== payload._id) return a;
+        // @ts-ignore
+        a[payload.field] = payload.value;
+        if (payload.field === "availableFrom") {
+          a.availableText = a.availableFrom
+            ? formatText(a.availableFrom, "Not available until")
+            : "";
+        }
+        if (payload.field === "dueDate") {
+          a.dueDateText = a.dueDate ? formatText(a.dueDate, "Due") : "";
+        }
+        return a;
+      });
+    },
+    renameAssignmentId: (
+      state,
+      { payload }: PayloadAction<{ oldId: string; newId: string }>
+    ) => {
+      const existing = state.assignments.find((a) => a._id === payload.oldId);
+      if (!existing) return;
+      const renamed: Assignment = { ...existing, _id: payload.newId };
+      state.assignments = state.assignments
+        .filter((a) => a._id !== payload.oldId)
+        .concat(renamed);
+    },
+    editAssignment: (state, { payload }: PayloadAction<string>) => {
       state.assignments = state.assignments.map((a) =>
-        a._id === p.originalId
-          ? {
-              _id: p._id,
-              title: p.title,
-              course: p.course,
-              modulesText: p.modulesText,
-              availableFrom: p.availableFrom,
-              availableUntil: p.availableUntil,
-              availableText: formatText(p.availableFrom, "Not available until"),
-              dueDate: p.dueDate,
-              dueDateText: formatText(p.dueDate, "Due"),
-              points: p.points,
-            }
-          : a
+        a._id === payload ? { ...a, editing: true } : a
+      );
+    },
+    finishEditingAssignment: (state, { payload }: PayloadAction<string>) => {
+      state.assignments = state.assignments.map((a) =>
+        a._id === payload ? { ...a, editing: false } : a
       );
     },
   },
 });
 
 export const {
+  setAssignments,
   addAssignment,
   deleteAssignment,
   updateAssignment,
+  setAssignmentField,
+  renameAssignmentId,
+  editAssignment,
+  finishEditingAssignment,
 } = assignmentsSlice.actions;
 
 export default assignmentsSlice.reducer;
