@@ -1,6 +1,5 @@
-import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit";
-import * as courseClient from "../Courses/client";
-import * as userClient from "../Account/client";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import { v4 as uuidv4 } from "uuid";
 
 export interface Course {
   _id: string;
@@ -26,9 +25,9 @@ const emptyCourse: Course = {
   description: "",
 };
 
-interface CoursesState {
-  courses: Course[]; // all courses
-  myCourses: Course[]; // enrolled courses from backend
+export interface CoursesState {
+  courses: Course[];
+  myCourses: Course[];
   currentCourse: Course;
   showAllEnrollments: boolean;
   enrollments: Enrollment[];
@@ -62,210 +61,35 @@ const initialState: CoursesState = {
   error: undefined,
 };
 
-
-export const loadAllCourses = createAsyncThunk("courses/loadAll", async () => {
-  const data = await courseClient.fetchAllCourses();
-  return data as Course[];
-});
-
-export const loadMyCourses = createAsyncThunk("courses/loadMine", async () => {
-  const data = await userClient.findMyCourses();
-  return data as Course[];
-});
-
-export const loadEnrollments = createAsyncThunk(
-  "courses/loadEnrollments",
-  async () => {
-    const data = await userClient.fetchMyEnrollments();
-    return data as Enrollment[];
-  }
-);
-
-export const createCourse = createAsyncThunk(
-  "courses/create",
-  async (coursePayload: Omit<Course, "_id">) => {
-    const newCourse = await userClient.createCourse(coursePayload);
-    return newCourse as Course;
-  }
-);
-
-export const updateCourse = createAsyncThunk(
-  "courses/update",
-  async (course: Course) => {
-    await courseClient.updateCourse(course);
-    return course; // backend returns 204 so keep local version
-  }
-);
-
-export const deleteCourse = createAsyncThunk(
-  "courses/delete",
-  async (courseId: string) => {
-    await courseClient.deleteCourse(courseId);
-    return courseId;
-  }
-);
-
-export const enrollInCourse = createAsyncThunk(
-  "courses/enroll",
-  async (courseId: string) => {
-    await userClient.enrollInCourse(courseId);
-    const updated = await userClient.findMyCourses();
-    return updated as Course[];
-  }
-);
-
-export const unenrollFromCourse = createAsyncThunk(
-  "courses/unenroll",
-  async (courseId: string) => {
-    const enrollment = await userClient.getEnrollmentForCourse(courseId);
-    if (!enrollment || !enrollment._id) {
-      throw new Error("Enrollment not found");
-    }
-    await userClient.unenroll(enrollment._id);
-    const updated = await userClient.findMyCourses();
-    return updated as Course[];
-  }
-);
-
-/** Slice **/
 const coursesSlice = createSlice({
   name: "courses",
   initialState,
   reducers: {
-    setCurrentCourse(state, action: PayloadAction<Course>) {
-      state.currentCourse = action.payload;
+    setCourses: (state, action: PayloadAction<Course[]>) => {
+      state.courses = action.payload;
     },
-    clearCurrentCourse(state) {
-      state.currentCourse = emptyCourse;
+    addCourse: (state, action: PayloadAction<Omit<Course, "_id">>) => {
+      const payload = action.payload;
+      const newCourse: Course = {
+        _id: uuidv4(),
+        name: payload.name,
+        number: payload.number,
+        startDate: payload.startDate,
+        endDate: payload.endDate,
+        description: payload.description,
+      };
+      state.courses = [...state.courses, newCourse];
     },
-    toggleShowAll(state) {
-      state.showAllEnrollments = !state.showAllEnrollments;
+    deleteCourse: (state, action: PayloadAction<string>) => {
+      const courseId = action.payload;
+      state.courses = state.courses.filter((c) => c._id !== courseId);
     },
-  },
-  extraReducers: (builder) => {
-    builder
-      // loadAllCourses
-      .addCase(loadAllCourses.pending, (s) => {
-        s.loadingAll = true;
-        s.error = undefined;
-      })
-      .addCase(loadAllCourses.fulfilled, (s, a) => {
-        s.loadingAll = false;
-        s.courses = a.payload;
-      })
-      .addCase(loadAllCourses.rejected, (s, a) => {
-        s.loadingAll = false;
-        s.error = a.error.message;
-      })
-      // loadMyCourses
-      .addCase(loadMyCourses.pending, (s) => {
-        s.loadingMine = true;
-        s.error = undefined;
-      })
-      .addCase(loadMyCourses.fulfilled, (s, a) => {
-        s.loadingMine = false;
-        s.myCourses = a.payload;
-      })
-      .addCase(loadMyCourses.rejected, (s, a) => {
-        s.loadingMine = false;
-        s.error = a.error.message;
-      })
-      // loadEnrollments
-      .addCase(loadEnrollments.pending, (s) => {
-        s.loadingEnrollments = true;
-        s.error = undefined;
-      })
-      .addCase(loadEnrollments.fulfilled, (s, a) => {
-        s.loadingEnrollments = false;
-        s.enrollments = a.payload;
-      })
-      .addCase(loadEnrollments.rejected, (s, a) => {
-        s.loadingEnrollments = false;
-        s.error = a.error.message;
-      })
-      // createCourse
-      .addCase(createCourse.pending, (s) => {
-        s.creating = true;
-        s.error = undefined;
-      })
-      .addCase(createCourse.fulfilled, (s, a) => {
-        s.creating = false;
-        s.courses.push(a.payload);
-        s.myCourses.push(a.payload); // backend auto-enrolled creator
-        s.currentCourse = emptyCourse;
-      })
-      .addCase(createCourse.rejected, (s, a) => {
-        s.creating = false;
-        s.error = a.error.message;
-      })
-      // updateCourse
-      .addCase(updateCourse.pending, (s) => {
-        s.updating = true;
-        s.error = undefined;
-      })
-      .addCase(updateCourse.fulfilled, (s, a) => {
-        s.updating = false;
-        const updated = a.payload;
-        s.courses = s.courses.map((c) => (c._id === updated._id ? updated : c));
-        s.myCourses = s.myCourses.map((c) => (c._id === updated._id ? updated : c));
-        if (s.currentCourse._id === updated._id) {
-          s.currentCourse = updated;
-        }
-      })
-      .addCase(updateCourse.rejected, (s, a) => {
-        s.updating = false;
-        s.error = a.error.message;
-      })
-      // deleteCourse
-      .addCase(deleteCourse.pending, (s) => {
-        s.deleting = true;
-        s.error = undefined;
-      })
-      .addCase(deleteCourse.fulfilled, (s, a) => {
-        s.deleting = false;
-        const id = a.payload;
-        s.courses = s.courses.filter((c) => c._id !== id);
-        s.myCourses = s.myCourses.filter((c) => c._id !== id);
-        if (s.currentCourse._id === id) {
-          s.currentCourse = emptyCourse;
-        }
-      })
-      .addCase(deleteCourse.rejected, (s, a) => {
-        s.deleting = false;
-        s.error = a.error.message;
-      })
-
-      .addCase(enrollInCourse.pending, (s) => {
-        s.enrolling = true;
-        s.error = undefined;
-      })
-      .addCase(enrollInCourse.fulfilled, (s, a) => {
-        s.enrolling = false;
-        s.myCourses = a.payload;
-      })
-      .addCase(enrollInCourse.rejected, (s, a) => {
-        s.enrolling = false;
-        s.error = a.error.message;
-      })
-
-      .addCase(unenrollFromCourse.pending, (s) => {
-        s.unenrolling = true;
-        s.error = undefined;
-      })
-      .addCase(unenrollFromCourse.fulfilled, (s, a) => {
-        s.unenrolling = false;
-        s.myCourses = a.payload;
-      })
-      .addCase(unenrollFromCourse.rejected, (s, a) => {
-        s.unenrolling = false;
-        s.error = a.error.message;
-      });
+    updateCourse: (state, action: PayloadAction<Course>) => {
+      const course = action.payload;
+      state.courses = state.courses.map((c) => (c._id === course._id ? course : c));
+    },
   },
 });
 
-export const {
-  setCurrentCourse,
-  clearCurrentCourse,
-  toggleShowAll,
-} = coursesSlice.actions;
+export const { setCourses, addCourse, deleteCourse, updateCourse } = coursesSlice.actions;
 export default coursesSlice.reducer;
