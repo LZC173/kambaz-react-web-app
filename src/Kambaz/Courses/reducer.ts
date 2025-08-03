@@ -1,5 +1,4 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import { v4 as uuidv4 } from "uuid";
 
 export interface Course {
   _id: string;
@@ -16,80 +15,64 @@ export interface Enrollment {
   course: string;
 }
 
-const emptyCourse: Course = {
-  _id: "",
-  name: "",
-  number: "",
-  startDate: "",
-  endDate: "",
-  description: "",
-};
-
 export interface CoursesState {
-  courses: Course[];
   myCourses: Course[];
-  currentCourse: Course;
-  showAllEnrollments: boolean;
+  courses: Course[]; // 给你现有组件用的 alias
   enrollments: Enrollment[];
-
-  loadingAll: boolean;
-  loadingMine: boolean;
-  loadingEnrollments: boolean;
-  creating: boolean;
-  updating: boolean;
-  deleting: boolean;
-  enrolling: boolean;
-  unenrolling: boolean;
-  error?: string;
 }
 
 const initialState: CoursesState = {
-  courses: [],
   myCourses: [],
-  currentCourse: emptyCourse,
-  showAllEnrollments: false,
+  courses: [],
   enrollments: [],
-
-  loadingAll: false,
-  loadingMine: false,
-  loadingEnrollments: false,
-  creating: false,
-  updating: false,
-  deleting: false,
-  enrolling: false,
-  unenrolling: false,
-  error: undefined,
 };
 
 const coursesSlice = createSlice({
   name: "courses",
   initialState,
   reducers: {
-    setCourses: (state, action: PayloadAction<Course[]>) => {
+    setMyCourses: (state, action: PayloadAction<Course[]>) => {
+      state.myCourses = action.payload;
       state.courses = action.payload;
     },
-    addCourse: (state, action: PayloadAction<Omit<Course, "_id">>) => {
-      const payload = action.payload;
-      const newCourse: Course = {
-        _id: uuidv4(),
-        name: payload.name,
-        number: payload.number,
-        startDate: payload.startDate,
-        endDate: payload.endDate,
-        description: payload.description,
-      };
-      state.courses = [...state.courses, newCourse];
-    },
-    deleteCourse: (state, action: PayloadAction<string>) => {
-      const courseId = action.payload;
-      state.courses = state.courses.filter((c) => c._id !== courseId);
+    addMyCourse: (state, action: PayloadAction<Course>) => {
+      if (!state.myCourses.some((c) => c._id === action.payload._id)) {
+        state.myCourses.push(action.payload);
+      }
+      if (!state.courses.some((c) => c._id === action.payload._id)) {
+        state.courses.push(action.payload);
+      }
     },
     updateCourse: (state, action: PayloadAction<Course>) => {
-      const course = action.payload;
-      state.courses = state.courses.map((c) => (c._id === course._id ? course : c));
+      const updated = action.payload;
+      state.myCourses = state.myCourses.map((c) =>
+        c._id === updated._id ? updated : c
+      );
+      state.courses = state.courses.map((c) =>
+        c._id === updated._id ? updated : c
+      );
+    },
+    deleteCourse: (state, action: PayloadAction<string>) => {
+      state.myCourses = state.myCourses.filter((c) => c._id !== action.payload);
+      state.courses = state.courses.filter((c) => c._id !== action.payload);
+    },
+    removeMyCourse: (state, action: PayloadAction<string>) => {
+      state.myCourses = state.myCourses.filter((c) => c._id !== action.payload);
+      state.courses = state.courses.filter((c) => c._id !== action.payload);
+    },
+    setEnrollments: (state, action: PayloadAction<Enrollment[]>) => {
+      state.enrollments = action.payload;
     },
   },
 });
 
-export const { setCourses, addCourse, deleteCourse, updateCourse } = coursesSlice.actions;
+export const {
+  setMyCourses,
+  addMyCourse,
+  updateCourse,
+  deleteCourse,
+  removeMyCourse,
+  setEnrollments,
+} = coursesSlice.actions;
+
 export default coursesSlice.reducer;

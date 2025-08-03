@@ -62,3 +62,8 @@ export const unEnrollUserFromCourse = async (userId: string, courseId: string) =
   });
   return data;
 };
+
+export const fetchMyEnrollments = async () => {
+  const { data } = await axiosWithCredentials.get(`${USERS_API}/current/enrollments`);
+  return data;
+};
