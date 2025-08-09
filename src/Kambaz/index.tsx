@@ -9,19 +9,19 @@ import Courses from "./Courses";
 import ProtectedRoute from "./Account/ProtectedRoute";
 import "./styles.css";
 import Session from "./Account/Session";
-import * as userClient from "./Account/client";
 
+import * as courseClient from "./Courses/client";
 export default function Kambaz() {
   const [, setCourses] = useState<any[]>([]);
     const { currentUser } = useSelector((state: any) => state.accountReducer);
-  const fetchCourses = async () => {
-    try {
-      const courses = await userClient.findMyCourses();
-      setCourses(courses);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+    const fetchCourses = async () => {
+      try {
+        const courses = await courseClient.fetchAllCourses();
+        setCourses(courses);
+      } catch (error) {
+        console.error(error);
+      }
+    };
 
 
   useEffect(() => {

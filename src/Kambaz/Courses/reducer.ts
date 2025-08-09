@@ -16,62 +16,84 @@ export interface Enrollment {
 }
 
 export interface CoursesState {
-  myCourses: Course[];
-  courses: Course[]; // 给你现有组件用的 alias
-  enrollments: Enrollment[];
+  myCourses: Course[];      
+  courses: Course[];        //
+  enrollments: Enrollment[]; 
+  draft: Course;            // 
 }
+
+export const DEFAULT_COURSE: Course = {
+  _id: "",
+  name: "New Course",
+  number: "NEW101",
+  startDate: "2025-01-01",
+  endDate: "2025-05-01",
+  description: "Created by user",
+};
 
 const initialState: CoursesState = {
   myCourses: [],
   courses: [],
-  enrollments: [],
+  enrollments: [],   // 
+  draft: { ...DEFAULT_COURSE },
 };
 
 const coursesSlice = createSlice({
   name: "courses",
   initialState,
   reducers: {
-    setMyCourses: (state, action: PayloadAction<Course[]>) => {
-      state.myCourses = action.payload;
+
+    setCourses: (state, action: PayloadAction<Course[]>) => {
       state.courses = action.payload;
     },
-    addMyCourse: (state, action: PayloadAction<Course>) => {
-      if (!state.myCourses.some((c) => c._id === action.payload._id)) {
-        state.myCourses.push(action.payload);
-      }
-      if (!state.courses.some((c) => c._id === action.payload._id)) {
-        state.courses.push(action.payload);
-      }
+    setMyCourses: (state, action: PayloadAction<Course[]>) => {
+      state.myCourses = action.payload;
+    },
+    addCourse: (state, action: PayloadAction<Course>) => {
+      const c = action.payload;
+      if (!state.courses.some((x) => x._id === c._id)) state.courses.push(c);
+      if (!state.myCourses.some((x) => x._id === c._id)) state.myCourses.push(c);
     },
     updateCourse: (state, action: PayloadAction<Course>) => {
-      const updated = action.payload;
-      state.myCourses = state.myCourses.map((c) =>
-        c._id === updated._id ? updated : c
-      );
-      state.courses = state.courses.map((c) =>
-        c._id === updated._id ? updated : c
-      );
+      const u = action.payload;
+      state.courses = state.courses.map((c) => (c._id === u._id ? u : c));
+      state.myCourses = state.myCourses.map((c) => (c._id === u._id ? u : c));
+      if (state.draft._id === u._id) state.draft = { ...u };
     },
     deleteCourse: (state, action: PayloadAction<string>) => {
-      state.myCourses = state.myCourses.filter((c) => c._id !== action.payload);
-      state.courses = state.courses.filter((c) => c._id !== action.payload);
+      const id = action.payload;
+      state.courses = state.courses.filter((c) => c._id !== id);
+      state.myCourses = state.myCourses.filter((c) => c._id !== id);
+      if (state.draft._id === id) state.draft = { ...DEFAULT_COURSE };
     },
-    removeMyCourse: (state, action: PayloadAction<string>) => {
-      state.myCourses = state.myCourses.filter((c) => c._id !== action.payload);
-      state.courses = state.courses.filter((c) => c._id !== action.payload);
+
+
+    setDraft: (state, action: PayloadAction<Course>) => {
+      state.draft = { ...action.payload };
     },
+    updateDraft: (state, action: PayloadAction<Partial<Course>>) => {
+      state.draft = { ...state.draft, ...action.payload };
+    },
+    resetDraft: (state) => {
+      state.draft = { ...DEFAULT_COURSE };
+    },
+
+    //
     setEnrollments: (state, action: PayloadAction<Enrollment[]>) => {
-      state.enrollments = action.payload;
+      state.enrollments = action.payload ?? [];
     },
   },
 });
 
 export const {
+  setCourses,
   setMyCourses,
-  addMyCourse,
+  addCourse,
   updateCourse,
   deleteCourse,
-  removeMyCourse,
+  setDraft,
+  updateDraft,
+  resetDraft,
   setEnrollments,
 } = coursesSlice.actions;
 

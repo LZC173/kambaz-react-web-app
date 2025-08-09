@@ -8,32 +8,37 @@ import "../../styles.css";
 import { useParams } from "react-router";
 
 import FormControl from "react-bootstrap/FormControl";
-import { setModules, addModule, editModule, updateModule, deleteModule }
-  from "./reducer";
+import { addModule, editModule, updateModule, deleteModule, setModules } from "./reducer";
+
 import { useSelector, useDispatch } from "react-redux";
 
 import * as coursesClient from "../client";
+
 import * as modulesClient from "./client";
+
 export default function Modules() {
   const { cid } = useParams();
   const [moduleName, setModuleName] = useState("");
   const { modules } = useSelector((state: any) => state.modulesReducer);
   const dispatch = useDispatch();
 const { currentUser } = useSelector((state: any) => state.accountReducer);
-  const fetchModules = async () => {
-    const modules = await coursesClient.findModulesForCourse(cid as string);
-    dispatch(setModules(modules));
-  };
-  useEffect(() => {
-    fetchModules();
-  }, []);
+ const fetchModulesForCourse = async () => {
+   const modules = await coursesClient.findModulesForCourse(cid!);
+   dispatch(setModules(modules));
+ };
+ useEffect(() => {
+   fetchModulesForCourse();
+ }, [cid]);
 
-    const createModuleForCourse = async () => {
-    if (!cid) return;
-    const newModule = { name: moduleName, course: cid };
-    const module = await coursesClient.createModuleForCourse(cid, newModule);
-    dispatch(addModule(module));
-  };
+const createModuleForCourse = async () => {
+  if (!cid) return;
+  const module = await coursesClient.createModuleForCourse(cid, {
+    name: moduleName,
+    course: cid,
+  });
+  dispatch(addModule(module));
+  setModuleName("");       
+};
     const removeModule = async (moduleId: string) => {
     await modulesClient.deleteModule(moduleId);
     dispatch(deleteModule(moduleId));
