@@ -160,7 +160,7 @@ const toDisplay = (
                   </div>
                   <div>
                     <span className="text-danger">
-                      {toDisplay(a.dueDate, { prefix: "Due", endOfDay: true })}
+                      {a.modulesText}
                     </span>
                     <span className="mx-2">|</span>
                     <span className="text-secondary">
