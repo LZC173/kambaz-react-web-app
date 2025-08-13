@@ -28,6 +28,41 @@ export default function Assignments() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  //date to stirng!!!!!!!!!!!
+  const fmt = (d?: string | Date | null) => {
+  if (d == null) return "—";
+  if (typeof d === "string") {
+    const t = d.trim();
+    if (!t) return "—";
+    if (t.length === 10) return t; 
+    const dt = new Date(t);
+    return isNaN(dt.getTime()) ? "—" : dt.toISOString().slice(0, 10);
+  }
+  return isNaN(d.getTime()) ? "—" : d.toISOString().slice(0, 10);
+};
+const toDisplay = (
+  d?: string | Date | null,
+  opts?: { prefix?: string; endOfDay?: boolean }
+): string => {
+  const { prefix, endOfDay } = opts || {};
+  const ymd = fmt(d);               
+  if (ymd === "—") return prefix ? `${prefix} —` : "—";
+
+  const [y, m, day] = ymd.split("-").map(Number);
+  const dt = new Date(y, m - 1, day);
+  if (endOfDay) dt.setHours(23, 59, 0, 0);
+  else dt.setHours(0, 0, 0, 0);            
+
+  const datePart = dt.toLocaleString("en-US", { month: "long", day: "numeric" });
+  let h = dt.getHours();
+  const ampm = h < 12 ? "am" : "pm";
+  h = h % 12 || 12;
+  const mm = String(dt.getMinutes()).padStart(2, "0");
+  const timePart = `${h}:${mm}${ampm}`;
+
+  return prefix ? `${prefix} ${datePart} at ${timePart}` : `${datePart} at ${timePart}`;
+};
+
   const fetchAssignments = async () => {
     if (!cid) return;
     setLoading(true);
@@ -124,14 +159,27 @@ export default function Assignments() {
                     )}
                   </div>
                   <div>
-                    <span className="text-danger">{a.modulesText}</span>
+                    <span className="text-danger">
+                      {toDisplay(a.dueDate, { prefix: "Due", endOfDay: true })}
+                    </span>
                     <span className="mx-2">|</span>
-                    <span className="text-secondary">{a.availableText}</span>
+                    <span className="text-secondary">
+                      {a.availableFrom || a.availableUntil
+                        ? (a.availableFrom && a.availableUntil
+                            ? `Available ${toDisplay(a.availableFrom, { endOfDay: false })} – ${toDisplay(a.availableUntil, { endOfDay: true })}`
+
+                            : a.availableFrom
+                              ? toDisplay(a.availableFrom, { prefix: "Not available until", endOfDay: false })
+
+                              : `Available — – ${toDisplay(a.availableUntil, { endOfDay: true })}`
+                          )
+                        : "Available —"}
+                    </span>
                     <span className="mx-2">|</span>
                   </div>
+
                   <div className="text-secondary">
-                    {a.dueDateText} <span className="mx-2">|</span> {a.points}{" "}
-                    pts
+                    {toDisplay(a.dueDate, { prefix: "Due", endOfDay: true })} <span className="mx-2">|</span> {a.points} pts
                   </div>
                 </div>
 
